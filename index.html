@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilibili视频下载器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .path-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .path-input-group input {
+            flex: 1;
+        }
+
+        .btn-browse {
+            padding: 12px 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-browse:hover {
+            background: #5a6268;
+        }
+
+        .save-path-info {
+            background: #e9ecef;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #495057;
+            font-size: 14px;
+        }
+
+        .btn-open-folder {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .btn-open-folder:hover {
+            background: #218838;
+        }
+
+        .file-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-pause-mini {
+            background: #f093fb;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-pause-mini:hover {
+            background: #d63384;
+        }
+
+        .btn-resume-mini {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-resume-mini:hover {
+            background: #0096c7;
+        }
+
+        .progress-bar-mini {
+            width: 100%;
+            height: 4px;
+            background: #e0e0e0;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .progress-fill-mini {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .progress-fill-mini.low {
+            background: linear-gradient(90deg, #ff6b6b 0%, #ee5a5a 100%);
+        }
+
+        .progress-fill-mini.medium {
+            background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .progress-fill-mini.high {
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .progress-fill-mini.complete {
+            background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .download-speed {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-pause:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-resume {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-resume:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-text {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .file-list {
+            margin-top: 30px;
+        }
+
+        .file-list h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .file-path {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .file-status {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-downloading {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-paused {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📺 Bilibili视频下载器</h1>
+
+        <div class="input-group">
+            <label for="videoUrl">视频地址</label>
+            <input type="text" id="videoUrl" placeholder="请输入Bilibili视频地址，例如：https://www.bilibili.com/video/BV1E7wtzaEdq/">
+        </div>
+
+        <div class="save-path-info">
+            <span>📁 默认保存到项目目录下的 downloads 文件夹</span>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-start" onclick="startDownload()">开始下载</button>
+        </div>
+
+        <div class="file-list">
+            <h2>下载文件列表</h2>
+            <div id="fileList">
+                <div class="empty-state">暂无下载文件</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let downloadIds = [];
+        let statusCheckInterval = null;
+
+        async function openFolder(filePath) {
+            try {
+                await fetch('http://localhost:3000/api/open-folder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: filePath })
+                });
+            } catch (error) {
+                console.error('打开目录失败:', error);
+            }
+        }
+
+        async function startDownload() {
+            const url = document.getElementById('videoUrl').value.trim();
+
+            if (!url) {
+                alert('请输入视频地址');
+                return;
+            }
+
+            const response = await fetch('http://localhost:3000/api/default-path');
+            const data = await response.json();
+            const savePath = data.path;
+
+            try {
+                const response = await fetch('http://localhost:3000/api/download', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url, savePath })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    downloadIds.push(data.downloadId);
+                    document.getElementById('videoUrl').value = '';
+                    loadFileList();
+                    startStatusCheck();
+                } else {
+                    alert('下载失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            }
+        }
+
+        async function pauseDownload(downloadId) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/download/${downloadId}/pause`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    loadFileList();
+                } else {
+                    alert('暂停失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            }
+        }
+
+        async function resumeDownload(downloadId) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/download/${downloadId}/resume`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    loadFileList();
+                } else {
+                    alert('恢复失败: ' + data.error);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            }
+        }
+
+        async function startStatusCheck() {
+            if (statusCheckInterval) {
+                clearInterval(statusCheckInterval);
+            }
+
+            statusCheckInterval = setInterval(async () => {
+                if (downloadIds.length === 0) return;
+
+                try {
+                    await loadFileList();
+                } catch (error) {
+                    console.error('状态检查失败:', error);
+                }
+            }, 1000);
+        }
+
+        function updateStatus(data) {
+            document.getElementById('statusText').textContent = data.message || '下载中...';
+            document.getElementById('progressFill').style.width = (data.progress || 0) + '%';
+        }
+
+        async function loadFileList() {
+            try {
+                const response = await fetch('http://localhost:3000/api/files');
+                const data = await response.json();
+
+                const fileList = document.getElementById('fileList');
+
+                if (data.files && data.files.length > 0) {
+                    fileList.innerHTML = data.files.map(file => {
+                        const progress = file.progress || 0;
+                        let progressClass = 'progress-fill-mini';
+                        if (file.status === 'downloading') {
+                            if (progress < 25) progressClass += ' low';
+                            else if (progress < 50) progressClass += ' medium';
+                            else if (progress < 75) progressClass += ' high';
+                            else progressClass += ' complete';
+                        } else if (file.status === 'completed') {
+                            progressClass += ' complete';
+                        }
+
+                        return `
+                        <div class="file-item">
+                            <div class="file-info">
+                                <div class="file-name">${file.name}</div>
+                                <div class="file-path">${file.path}</div>
+                                ${file.status === 'downloading' ? `<div class="progress-bar-mini"><div class="${progressClass}" style="width: ${progress}%"></div></div>` : ''}
+                                ${file.speed ? `<div class="download-speed">🚀 ${file.speed}</div>` : ''}
+                            </div>
+                            <div class="file-actions">
+                                ${file.status === 'completed' ? `<button class="btn-open-folder" onclick="openFolder('${file.path.replace(/\\/g, '\\\\')}')">打开目录</button>` : ''}
+                                ${file.status === 'downloading' ? `<button class="btn-pause-mini" onclick="pauseDownload('${file.id}')">暂停</button>` : ''}
+                                ${file.status === 'paused' ? `<button class="btn-resume-mini" onclick="resumeDownload('${file.id}')">恢复</button>` : ''}
+                                <span class="file-status status-${file.status === 'completed' ? 'completed' : file.status === 'downloading' ? 'downloading' : 'paused'}">
+                                    ${file.status === 'completed' ? '已完成' : file.status === 'downloading' ? '下载中' : '已暂停'}
+                                </span>
+                            </div>
+                        </div>
+                    `}).join('');
+                } else {
+                    fileList.innerHTML = '<div class="empty-state">暂无下载文件</div>';
+                }
+            } catch (error) {
+                console.error('加载文件列表失败:', error);
+            }
+        }
+
+        window.onload = function() {
+            loadFileList();
+            setInterval(loadFileList, 5000);
+        };
+    </script>
+</body>
+</html>
