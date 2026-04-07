@@ -49,6 +49,16 @@ sudo apt install yt-dlp
 yt-dlp --version
 ```
 
+### 4. 安装FFmpeg（可选，用于视频合并）
+
+#### Windows系统：
+- 从 https://ffmpeg.org/download.html 下载 Windows 版本
+- 解压后将 `bin` 目录添加到系统 PATH
+
+#### macOS/Linux系统：
+- macOS (Homebrew): `brew install ffmpeg`
+- Linux (Ubuntu/Debian): `sudo apt install ffmpeg`
+
 ## 使用方法
 
 ### 1. 启动服务器
@@ -133,11 +143,24 @@ GET /api/files
 - Windows系统可能不支持进程暂停功能
 - 这是操作系统的限制，不影响下载功能
 
+## 项目结构
+
+```
+bilibili-downloader/
+├── index.html          # 前端页面
+├── server.js           # 后端服务器
+├── package.json        # 项目配置
+├── README.md           # 项目说明
+└── .gitignore          # Git忽略文件
+```
+
 ## 技术栈
 
 - **前端**：HTML5, CSS3, JavaScript
 - **后端**：Node.js, Express
+- **依赖包**：cors, iconv-lite, node-powershell
 - **下载器**：yt-dlp
+- **视频处理**：FFmpeg
 
 ## 许可证
 
